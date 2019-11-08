@@ -23,6 +23,7 @@ RUN set -ex \
 		# ruby 2.3 on stretch can only support libssl1.0-dev (libssl dev from buildpack-deps is 1.1.x)
 		libssl1.0-dev \
 		ruby \
+		libjemalloc-dev \
 	' \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends $buildDeps \
@@ -51,6 +52,7 @@ RUN set -ex \
 	&& ./configure \
 		--build="$gnuArch" \
 		--disable-install-doc \
+		--with-jemalloc \
 		--enable-shared \
 	&& make -j "$(nproc)" \
 	&& make install \
@@ -63,6 +65,9 @@ RUN set -ex \
 	&& gem update --system "$RUBYGEMS_VERSION" && rm -r /root/.gem/ \
 # rough smoke test
 	&& ruby --version && gem --version && bundle --version
+
+# Sanity check for jemalloc
+RUN ruby -r rbconfig -e "abort 'jemalloc not enabled' unless RbConfig::CONFIG['LIBS'].include?('jemalloc') || RbConfig::CONFIG['MAINLIBS'].include?('jemalloc')"
 
 # install things globally, for great justice
 # and don't create ".bundle" in all our apps
