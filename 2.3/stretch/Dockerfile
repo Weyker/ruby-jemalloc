@@ -1,5 +1,10 @@
 FROM buildpack-deps:stretch
 
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends \
+		libjemalloc-dev \
+	&& rm -rf /var/lib/apt/lists/*
+
 # skip installing gem documentation
 RUN mkdir -p /usr/local/etc \
 	&& { \
@@ -23,7 +28,6 @@ RUN set -ex \
 		# ruby 2.3 on stretch can only support libssl1.0-dev (libssl dev from buildpack-deps is 1.1.x)
 		libssl1.0-dev \
 		ruby \
-		libjemalloc-dev \
 	' \
 	&& apt-get update \
 	&& apt-get install -y --no-install-recommends $buildDeps \
